@@ -1,0 +1,8 @@
+__pycache__/
+goopy/__pycache__
+.git
+build/
+dist/
+setuptick.py
+goopy.egg-info/
+simple_tests/
