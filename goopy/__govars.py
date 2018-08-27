@@ -7,6 +7,7 @@ ptrdiff_t = ctypes.c_int32
 class GoString(ctypes.Structure):
     _fields_ = [('p', ctypes.c_char_p),
                 ('n', ptrdiff_t)]
+    is_tuple = False
 
     def __init__(self, p):
         super().__init__()
@@ -16,17 +17,22 @@ class GoString(ctypes.Structure):
         self.p = ctypes.c_char_p(p.encode())
         self.n = ptrdiff_t(len(p))
 
-    def get_value(self):
-        casted = ctypes.cast(self.p, ctypes.c_char_p).value.decode()
-        stringform = casted[:self.n]
+    def __conv_from_c_char_p(self, c):
+        return self.__get_value(c.p, c.n)
+
+    def __get_value(self, p, n):
+        casted = ctypes.cast(p, ctypes.c_char_p).value.decode()
+        stringform = casted[:n]
         return stringform
+
+    def get_value(self):
+        return self.__get_value(self.p, self.n)
 
     def use(self):
         return self
 
 
-GoString.ctype = GoString  # ctype should be whatever the pyarg should be converted
-                           # to, and what it should be in func.argtypes
+GoString.ctype = GoString  # ctype should be whatever the pyarg should be converted to, and what it should be in func.argtypes
 
 
 class GoByteSlice(GoString):  # is almost GoString
@@ -39,6 +45,7 @@ class GoByteSlice(GoString):  # is almost GoString
 class __BaseGoNumber():
     pytype = int  # default
     ctype = ctypes.c_int64
+    is_tuple = False
 
     def __init__(self, i):
         # super().__init__()
@@ -107,6 +114,10 @@ class GoFloat32(__BaseGoFloat):
     ctype = ctypes.c_float
 
 
+class GoBoolean():
+    ctype = ctypes.c_bool
+
+
 class GoVoid(ctypes.Structure):
     ctype = ctypes.c_long
 
@@ -126,7 +137,7 @@ uint16 = GoUint16
 uint8 = GoInt8
 goint = GoInt64  # really no other thing to name this...
 uint = GoUint64
-gofloat = GoFloat32
 float32 = GoFloat32
 float64 = GoFloat64
+boolean = GoBoolean
 void = GoVoid
